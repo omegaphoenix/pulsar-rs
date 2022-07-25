@@ -651,6 +651,7 @@ impl<Exe: Executor> TopicProducer<Exe> {
                         .map_err(ProducerError::Io)?;
                     let compressed_payload = e.finish().map_err(ProducerError::Io)?;
 
+                    message.uncompressed_size = Some(message.payload.len() as u32);
                     message.payload = compressed_payload;
                     message.compression = Some(2);
                     message
@@ -664,8 +665,9 @@ impl<Exe: Executor> TopicProducer<Exe> {
                 {
                     let compressed_payload =
                         zstd::encode_all(&message.payload[..], 0).map_err(ProducerError::Io)?;
-                    message.compression = Some(3);
+                    message.uncompressed_size = Some(message.payload.len() as u32);
                     message.payload = compressed_payload;
+                    message.compression = Some(3);
                     message
                 }
             }
@@ -691,6 +693,7 @@ impl<Exe: Executor> TopicProducer<Exe> {
                         })
                         .map_err(ProducerError::Io)?;
 
+                    message.uncompressed_size = Some(message.payload.len() as u32);
                     message.payload = compressed_payload;
                     message.compression = Some(4);
                     message
